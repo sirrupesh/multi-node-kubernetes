@@ -14,4 +14,7 @@ kubectl apply -f dashboard-adminuser.yaml
 kubectl create secret generic openai-secret --from-literal=api-key="123456"
 
 kubectl apply -f project.yaml
+kg all -n sir-ns
 kubectl apply -f ingress-resource.yaml
+
+kind delete cluster --name sir-multi-node-ingress-cluster
