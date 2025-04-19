@@ -3,14 +3,29 @@ kind: Ingress
 metadata:
   name: sir-multi-node-ingress
 spec:
+  # defaultBackend:
+  #   service:
+  #     name: llm-app-lb-service
+  #     port:
+  #       number: 80
   rules:
-  rules:
-  - http:
+  - host: "abc.localhost"
+    http:
       paths:
       - path: /
         pathType: ImplementationSpecific
         backend:
           service:
             name: llm-app-lb-service
+            port:
+              number: 80
+  - host: "cambridge.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-app-lb-service
             port:
               number: 80
