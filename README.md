@@ -65,7 +65,43 @@ This project demonstrates a multi-node Kubernetes cluster setup using Kind, runn
    # kubectl apply -k k8s/overlays/prod/
    ```
 
-5. Access the applications:
+5. Wait for all resources to be ready:
+   ```bash
+   # Wait for ingress controller to be ready
+   kubectl wait --namespace ingress-nginx \
+     --for=condition=ready pod \
+     --selector=app.kubernetes.io/component=controller \
+     --timeout=90s
+
+   # Wait for application deployments to be ready
+   kubectl wait --namespace sir-ns \
+     --for=condition=ready pod \
+     --selector=app=llm-app \
+     --timeout=90s
+
+   kubectl wait --namespace sir-ns \
+     --for=condition=ready pod \
+     --selector=app=nginx \
+     --timeout=90s
+   ```
+
+6. Verify the deployment status:
+   ```bash
+   # Get all resources in the namespace
+   kubectl get all,ingress -n sir-ns
+
+   # Check detailed status of deployments
+   kubectl describe deployments -n sir-ns
+
+   # Check application logs
+   kubectl logs -n sir-ns -l app=llm-app
+   kubectl logs -n sir-ns -l app=nginx
+
+   # Check ingress status
+   kubectl describe ingress -n sir-ns
+   ```
+
+7. Access the applications:
    - Flask app: http://sirrupesh.localhost
    - Nginx service: http://cambridge.localhost
 
