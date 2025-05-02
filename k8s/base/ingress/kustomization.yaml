@@ -5,6 +5,7 @@ kind: Kustomization
 
 resources:
   - ingress-resource.yaml  # Ingress routing rules
+  - ingress-class.yaml    # Ingress class definition
 
 labels:
   - pairs:
