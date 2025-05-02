@@ -12,7 +12,9 @@ resources:
 # Target namespace for all resources
 namespace: sir-ns
 
-# Common labels for all resources
-commonLabels:
-  managed-by: kustomize
-  environment: base
+# Labels for all resources
+labels:
+  - includeSelectors: false
+    pairs:
+      managed-by: kustomize
+      environment: base

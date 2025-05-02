@@ -10,10 +10,12 @@ resources:
 # Namespace for production environment
 namespace: prod
 
-# Common labels for all resources in production
-commonLabels:
-  environment: production
-  tier: production
+# Labels for all resources in production
+labels:
+  - includeSelectors: false
+    pairs:
+      environment: production
+      tier: production
 
 # ConfigMap generator for production-specific configs
 configMapGenerator:

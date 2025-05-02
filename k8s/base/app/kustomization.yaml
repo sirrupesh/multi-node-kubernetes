@@ -7,8 +7,9 @@ resources:
   - deployment.yaml  # Application pods
   - service.yaml     # Service exposure
 
-commonLabels:
-  app: llm-app
-  component: web
-  tier: backend
-  environment: base
+labels:
+  - includeSelectors: false
+    pairs:
+      component: web
+      tier: backend
+      environment: base

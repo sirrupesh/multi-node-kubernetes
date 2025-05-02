@@ -7,8 +7,9 @@ resources:
   - deployment.yaml  # Nginx server pods
   - service.yaml     # Service exposure
 
-commonLabels:
-  app: nginx
-  component: web
-  tier: frontend
-  environment: base
+labels:
+  - includeSelectors: false
+    pairs:
+      component: web
+      tier: frontend
+      environment: base

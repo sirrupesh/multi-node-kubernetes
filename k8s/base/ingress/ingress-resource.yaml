@@ -8,8 +8,8 @@ metadata:
   annotations:
     # Configure Nginx ingress behavior
     nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.class: nginx
 spec:
+  ingressClassName: nginx
   rules:
   # Route traffic for sirrupesh.localhost to Flask application
   - host: "sirrupesh.localhost"

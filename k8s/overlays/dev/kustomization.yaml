@@ -10,9 +10,11 @@ resources:
 # Namespace for development environment
 namespace: dev
 
-# Common labels for all resources in dev
-commonLabels:
-  environment: development
+# Labels for all resources in dev
+labels:
+  - includeSelectors: false
+    pairs:
+      environment: development
   
 # Patches to override base configuration
 patches:
