@@ -1,0 +1,14 @@
+# Flask Application Kustomization
+# Manages Flask app deployment and service resources
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml  # Application pods
+  - service.yaml     # Service exposure
+
+commonLabels:
+  app: llm-app
+  component: web
+  tier: backend
+  environment: base

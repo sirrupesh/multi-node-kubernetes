@@ -1,9 +1,14 @@
+# Kubernetes Dashboard User Configuration
+# Creates admin user and necessary RBAC permissions for dashboard access
+
+# ServiceAccount for dashboard access
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: admin-user
   namespace: kubernetes-dashboard
 ---
+# ClusterRoleBinding to grant admin permissions
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -17,6 +22,7 @@ subjects:
   name: admin-user
   namespace: kubernetes-dashboard
 ---
+# Service Account Token for dashboard authentication
 apiVersion: v1
 kind: Secret
 metadata:
@@ -24,4 +30,4 @@ metadata:
   namespace: kubernetes-dashboard
   annotations:
     kubernetes.io/service-account.name: "admin-user"   
-type: kubernetes.io/service-account-token  
+type: kubernetes.io/service-account-token

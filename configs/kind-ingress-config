@@ -1,7 +1,11 @@
+# Kind Cluster Configuration
+# Defines a multi-node Kubernetes cluster with ingress support
+# Structure: 2 control-plane nodes + 3 worker nodes
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: sir-multi-node-ingress-cluster
 nodes:
+# Primary control plane node with ingress configuration
 - role: control-plane
   kubeadmConfigPatches:
   - |
@@ -9,6 +13,7 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
+  # Port mappings for ingress controller
   extraPortMappings:
   - containerPort: 80
     hostPort: 80
@@ -16,7 +21,9 @@ nodes:
   - containerPort: 443
     hostPort: 443
     protocol: TCP
+# Secondary control plane node for HA
 - role: control-plane
+# Worker nodes for application workloads
 - role: worker
 - role: worker
 - role: worker

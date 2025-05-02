@@ -1,0 +1,58 @@
+# Flask Application Deployment
+# This deployment manages a Python Flask application that serves as a simple web server
+# with visitor counting, hostname display, and request URL display capabilities.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-app
+  labels:
+    app: llm-app
+    component: web
+    tier: backend
+spec:
+  # Running 3 replicas for high availability
+  replicas: 3
+  selector:
+    matchLabels:
+      app: llm-app
+  template:
+    metadata:
+      labels:
+        app: llm-app
+        component: web
+        tier: backend
+    spec:
+      containers:
+      - name: llm-app
+        image: sirrupesh/sample:v2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+          name: http
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-secret
+              key: api-key
+        # Resource limits and requests for better resource management
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        # Health checks to ensure application availability
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10

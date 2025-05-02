@@ -1,0 +1,14 @@
+# Nginx Server Kustomization
+# Manages Nginx deployment and service resources
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml  # Nginx server pods
+  - service.yaml     # Service exposure
+
+commonLabels:
+  app: nginx
+  component: web
+  tier: frontend
+  environment: base

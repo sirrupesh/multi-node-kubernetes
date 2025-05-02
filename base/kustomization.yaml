@@ -1,0 +1,18 @@
+# Root Kustomization Configuration
+# Combines all components (app, nginx, ingress) into a single deployment
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Component references
+resources:
+  - app      # Flask application manifests
+  - nginx    # Nginx server manifests
+  - ingress  # Ingress configuration
+
+# Target namespace for all resources
+namespace: sir-ns
+
+# Common labels for all resources
+commonLabels:
+  managed-by: kustomize
+  environment: base
