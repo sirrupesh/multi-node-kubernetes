@@ -1,25 +1,31 @@
-# Traffic Router
-# External service access
+# Ingress Traffic Configuration
+# Provides external access to cluster services through URL-based routing
+# 
+# Service Endpoints:
+# - sirrupesh.localhost -> Flask visitor counter
+# - cambridge.localhost -> Nginx static content
+# - app4.localhost -> PHP diagnostics (internal use)
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: multi-app-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /  # Clean URLs
+    nginx.ingress.kubernetes.io/rewrite-target: /  # Removes path prefix for clean URLs
 spec:
-  ingressClassName: nginx
+  ingressClassName: nginx  # Uses the nginx ingress controller
   rules:
-  - host: "sirrupesh.localhost"  # Visit counter
+  - host: "sirrupesh.localhost"  # Primary application endpoint
     http:
       paths:
       - path: /
-        pathType: Prefix
+        pathType: Prefix  # Matches all paths under root
         backend:
           service:
             name: flask-app-service
             port:
               number: 80
-  - host: "cambridge.localhost"  # Web content
+  - host: "cambridge.localhost"  # Static content endpoint
     http:
       paths:
       - path: /
@@ -29,7 +35,7 @@ spec:
             name: nginx-frontend-service
             port:
               number: 80
-  - host: "app4.localhost"  # PHP info
+  - host: "app4.localhost"  # Diagnostic endpoint (restrict in production)
     http:
       paths:
       - path: /

@@ -1,11 +1,12 @@
-# Prod Config
+# Production Environment Configuration
+# Provides high availability, resource limits, and security hardening
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base  # Core
+  - ../../base  # Import base configuration
 
-namespace: prod  # Isolation
+namespace: prod  # Production namespace isolation
 
 labels:
   - includeSelectors: false
@@ -13,24 +14,24 @@ labels:
       environment: production
       tier: production
 
-# Runtime
+# Runtime Configuration
 configMapGenerator:
 - name: app-config
   literals:
-    - LOG_LEVEL=info      # Default
-    - ENABLE_METRICS=true # Stats
+    - LOG_LEVEL=info      # Production logging level
+    - ENABLE_METRICS=true # Enable prometheus metrics collection
 
 patches:
-  # HA
+  # High Availability Configuration
   - target:
       kind: Deployment
       name: llm-app
     patch: |-
       - op: replace
         path: /spec/replicas
-        value: 5  # Scale out
+        value: 5  # Multiple replicas for load distribution and failover
 
-  # Resources
+  # Production Resource Allocation
   - target:
       kind: Deployment
       name: llm-app
@@ -39,13 +40,13 @@ patches:
         path: /spec/template/spec/containers/0/resources
         value:
           requests:
-            cpu: "500m"     # Min CPU
-            memory: "512Mi" # Min RAM
+            cpu: "500m"     # Guaranteed CPU allocation
+            memory: "512Mi" # Guaranteed memory allocation
           limits:
-            cpu: "1000m"    # Cap CPU
-            memory: "1Gi"   # Cap RAM
+            cpu: "1000m"    # Maximum CPU usage
+            memory: "1Gi"   # Maximum memory usage
 
-  # Auth
+  # Security Context Configuration
   - target:
       kind: Deployment
       name: llm-app
@@ -53,11 +54,11 @@ patches:
       - op: add
         path: /spec/template/spec/securityContext
         value:
-          runAsNonRoot: true # Safe
-          runAsUser: 1000    # App
-          fsGroup: 2000      # Data
+          runAsNonRoot: true # Prevent root execution
+          runAsUser: 1000    # Dedicated service account
+          fsGroup: 2000      # File system access group
 
-  # Metrics
+  # Monitoring Configuration
   - target:
       kind: Deployment
       name: llm-app
@@ -65,5 +66,5 @@ patches:
       - op: add
         path: /spec/template/metadata/annotations
         value:
-          prometheus.io/scrape: "true" # Enable
-          prometheus.io/port: "5000"   # Port
+          prometheus.io/scrape: "true" # Enable metrics collection
+          prometheus.io/port: "5000"   # Metrics endpoint port

@@ -1,4 +1,10 @@
-# Admin Access
+# Kubernetes Dashboard Authentication Configuration
+# WARNING: This grants full cluster admin access - use with caution
+# Consider implementing more granular RBAC for production use
+
+---
+# Service Account Configuration
+# Creates dedicated admin user for dashboard access
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -6,7 +12,9 @@ metadata:
   namespace: kubernetes-dashboard
 
 ---
-# Permissions
+# RBAC Configuration
+# Grants cluster-admin privileges to dashboard user
+# WARNING: Provides unrestricted cluster access
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -14,19 +22,20 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-admin  # Full
+  name: cluster-admin  # Grants full cluster management rights
 subjects:
 - kind: ServiceAccount
   name: admin-user
   namespace: kubernetes-dashboard
 
 ---
-# Token
+# Authentication Token
+# Auto-generates service account token for dashboard login
 apiVersion: v1
 kind: Secret
 metadata:
   name: admin-user
   namespace: kubernetes-dashboard
   annotations:
-    kubernetes.io/service-account.name: "admin-user"
-type: kubernetes.io/service-account-token
+    kubernetes.io/service-account.name: "admin-user"  # Links to service account
+type: kubernetes.io/service-account-token  # Standard K8s token type

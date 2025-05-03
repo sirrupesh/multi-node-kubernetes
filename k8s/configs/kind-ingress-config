@@ -1,28 +1,29 @@
-# Dev Cluster Config
+# Development Cluster Configuration for Kind
+# Multi-node setup with ingress support and high availability
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 name: sir-multi-node-ingress-cluster
 
 nodes:
-# Ingress controller
+# Primary control plane node with ingress controller
 - role: control-plane
   kubeadmConfigPatches:
   - |
     kind: InitConfiguration
     nodeRegistration:
       kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
+        node-labels: "ingress-ready=true"  # Required for ingress controller
   extraPortMappings:
-  - containerPort: 80
+  - containerPort: 80    # HTTP ingress
     hostPort: 80
     protocol: TCP
-  - containerPort: 443
+  - containerPort: 443   # HTTPS ingress
     hostPort: 443
     protocol: TCP
 
-- role: control-plane  # HA pair
+- role: control-plane  # Secondary control plane for HA failover
 
-# Workload nodes
-- role: worker  # Apps
-- role: worker  # Scaling
-- role: worker  # Backup
+# Worker nodes for application workloads
+- role: worker  # Primary application workloads
+- role: worker  # Horizontal scaling capacity
+- role: worker  # Redundancy and failover support
