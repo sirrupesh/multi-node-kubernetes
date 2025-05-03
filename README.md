@@ -1,144 +1,199 @@
-# Kubernetes Demo Project
+# Multi-Service Kubernetes Demo
 
-This project demonstrates a multi-node Kubernetes cluster setup using Kind, running a Flask application and Nginx service with ingress configurations.
+A production-ready Kubernetes demonstration using Kind, featuring multiple microservices:
+- Flask-based visitor counter with metrics
+- PHP environment diagnostics service
+- Nginx static content server
+- Ingress-based routing with domain mapping
+
+## Table of Contents
+- [Quick Start](#quick-start)
+- [Architecture](#architecture)
+- [Development Guide](#development-guide)
+- [Monitoring](#monitoring)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [Troubleshooting](#troubleshooting)
+- [Cleanup](#cleanup)
+- [Contributing](#contributing)
+- [Security Notes](#security-notes)
+
+## Quick Start
+
+```bash
+# 1. Create cluster
+kind create cluster --config k8s/configs/kind-ingress-config
+
+# 2. Setup namespace
+kubectl create ns sir-ns
+kubens sir-ns
+
+# 3. Install ingress controller
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+
+# 4. Wait for ingress
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
+```
+
+## Architecture
+
+### Components
+- **Flask App**: Visitor tracking service with Prometheus metrics
+- **PHP App**: System diagnostics and environment information
+- **Nginx**: Static content delivery
+- **Ingress**: Domain-based routing to services
+
+### Access Points
+- Visitor Counter: http://sirrupesh.localhost
+- System Info: http://app4.localhost
+- Static Content: http://cambridge.localhost
+
+## Development Guide
+
+### Prerequisites
+- Docker 20.10.0+
+- Kind 0.11.0+
+- kubectl 1.20.0+
+- kubens
+- Helm v3 (dashboard)
+- Kustomize
+
+### Local Setup
+
+1. **Configure Secrets**
+```bash
+kubectl create secret generic openai-secret --from-literal=api-key="your-api-key"
+```
+
+2. **Build Images**
+```bash
+# Build all services
+docker build -t sirrupesh/app4:latest src/app4/
+docker build -t sirrupesh/flask:latest src/app/
+docker build -t sirrupesh/nginx:latest src/nginx/
+
+# Load into Kind
+kind load docker-image sirrupesh/app4:latest --name sir-multi-node-ingress-cluster
+kind load docker-image sirrupesh/flask:latest --name sir-multi-node-ingress-cluster
+kind load docker-image sirrupesh/nginx:latest --name sir-multi-node-ingress-cluster
+```
+
+3. **Deploy Services**
+```bash
+# Base configuration
+kubectl apply -k k8s/base/
+
+# Environment-specific (optional)
+kubectl apply -k k8s/overlays/dev/   # Development
+kubectl apply -k k8s/overlays/prod/  # Production
+```
+
+## Monitoring
+
+### Resource Status
+```bash
+# View all resources
+kubectl get all,ingress -n sir-ns
+
+# Check pod health
+kubectl get pods -n sir-ns -o wide
+
+# View logs
+kubectl logs -l app=flask-app -n sir-ns  # Flask app
+kubectl logs -l my-app=app4 -n sir-ns    # PHP app
+```
+
+### Health Checks
+- Liveness probes: `/health/live`
+- Readiness probes: `/health/ready`
+- Metrics (Production): `/metrics`
+
+## Configuration
+
+### Development Environment
+- Single replica per service
+- Debug mode enabled
+- Minimal resource limits
+- Hot reload support
+
+### Production Environment
+- High availability (3 replicas)
+- Resource optimization
+- Security hardening
+- Prometheus metrics
+- Pod anti-affinity
+- Rolling updates
 
 ## Project Structure
-
 ```
 .
-├── src/
-│   └── app/              # Flask application
-├── k8s/
-│   ├── base/            # Base Kubernetes manifests
-│   │   ├── app/        # Flask app manifests
-│   │   ├── nginx/      # Nginx service manifests
-│   │   └── ingress/    # Ingress configurations
-│   ├── configs/        # Cluster configurations
-│   ├── dashboard/      # Kubernetes dashboard setup
-│   └── overlays/       # Environment-specific overlays
+├── k8s/                 # Kubernetes manifests
+│   ├── base/           # Base configurations
+│   ├── overlays/       # Environment overlays
+│   ├── configs/        # Cluster config
+│   └── dashboard/      # K8s dashboard
+└── src/                # Application source
+    ├── app/           # Flask service
+    ├── app4/          # PHP service
+    └── nginx/         # Static server
 ```
 
-## Prerequisites
+## Troubleshooting
 
-- Docker
-- Kind
-- kubectl
-- kubens
-- Helm (for dashboard)
-- Kustomize (included with kubectl v1.14+)
+### Common Issues
 
-## Getting Started
-
-1. Create the Kind cluster:
+1. **Service Unavailable**
    ```bash
-   kind create cluster --config k8s/configs/kind-ingress-config
-   ```
-
-2. Create namespace and switch context:
-   ```bash
-   kubectl create ns sir-ns
-   kubens sir-ns
-   ```
-
-3. Install Nginx Ingress Controller:
-   ```bash
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
-   ```
-
-4. Build and deploy the application:
-   ```bash
-   # Build the Docker image
-   docker build -t sirrupesh/sample:v2 src/app/
-
-   # Create OpenAI secret
-   kubectl create secret generic openai-secret --from-literal=api-key="your-api-key"
-
-   # Deploy using Kustomize
-   # For base configuration:
-   kubectl apply -k k8s/base/
-
-   # Or for specific environments:
-   # Development:
-   # kubectl apply -k k8s/overlays/dev/
-   
-   # Production:
-   # kubectl apply -k k8s/overlays/prod/
-   ```
-
-5. Wait for all resources to be ready:
-   ```bash
-   # Wait for ingress controller to be ready
-   kubectl wait --namespace ingress-nginx \
-     --for=condition=ready pod \
-     --selector=app.kubernetes.io/component=controller \
-     --timeout=90s
-
-   # Wait for application deployments to be ready
-   kubectl wait --namespace sir-ns \
-     --for=condition=ready pod \
-     --selector=my-app=llm-app \
-     --timeout=90s
-
-   kubectl wait --namespace sir-ns \
-     --for=condition=ready pod \
-     --selector=my-app=nginx \
-     --timeout=90s
-   ```
-
-6. Verify the deployment status:
-   ```bash
-   # Get all resources in the namespace
-   kubectl get all,ingress -n sir-ns
-
-   # Check detailed status of deployments
-   kubectl describe deployments -n sir-ns
-
-   # Check application logs
-   kubectl logs -n sir-ns -l my-app=llm-app
-   kubectl logs -n sir-ns -l my-app=nginx
-
    # Check ingress status
-   kubectl describe ingress -n sir-ns
+   kubectl get ingress -n sir-ns
+   kubectl describe ingress multi-app-ingress -n sir-ns
    ```
 
-7. Access the applications:
-   - Flask app: http://sirrupesh.localhost
-   - Nginx service: http://cambridge.localhost
-
-## Working with Local Images
-
-When developing locally, you can load Docker images directly into your Kind cluster without pushing them to a registry:
-
-1. Build your local Docker image:
+2. **Pod Startup Failure**
    ```bash
-   # For app4
-   cd src/app4 && docker build -t app4:latest .
-   # For main app
-   cd src/app && docker build -t app:latest .
+   # View pod details
+   kubectl describe pod <pod-name> -n sir-ns
    ```
 
-2. Load the image into Kind cluster:
+3. **Image Issues**
    ```bash
-   # Load app4 image
-   kind load docker-image app4:latest --name sir-multi-node-ingress-cluster
-   # Load main app image
-   kind load docker-image app:latest --name sir-multi-node-ingress-cluster
+   # Verify images in cluster
+   docker exec -it kind-control-plane crictl images
    ```
 
-3. Make sure your Kubernetes manifests use the correct image name and pull policy:
-   ```yaml
-   spec:
-     containers:
-     - name: your-container
-       image: app4:latest  # Use the same tag as built locally
-       imagePullPolicy: Never  # Important for using local images
-   ```
-
-Note: The `imagePullPolicy: Never` setting ensures Kubernetes uses the local image instead of trying to pull from a registry.
+### Logs
+```bash
+# Container logs
+kubectl logs -l my-app=flask-backend -n sir-ns
+kubectl logs -l my-app=php-backend -n sir-ns
+```
 
 ## Cleanup
 
-To delete the cluster:
+### Full Cleanup
 ```bash
 kind delete cluster --name sir-multi-node-ingress-cluster
 ```
+
+### Partial Cleanup
+```bash
+kubectl delete -k k8s/base/          # Remove services
+kubectl delete namespace sir-ns      # Remove namespace
+```
+
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+## Security Notes
+- Development setup uses insecure defaults
+- Production overlay includes:
+  - Non-root user execution
+  - Resource limits
+  - Network policies
+  - Secure probes
+  - RBAC configuration

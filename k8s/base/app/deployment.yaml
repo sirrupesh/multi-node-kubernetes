@@ -23,8 +23,8 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: sirrupesh/sample:v2
-        imagePullPolicy: IfNotPresent
+        image: sirrupesh/flask:latest  # Use latest image
+        imagePullPolicy: Never  # Use local image only
         ports:
         - containerPort: 5000
           name: flask-http

@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: php-app
-        image: app4:latest
+        image: sirrupesh/app4:latest # Use latest image
         imagePullPolicy: Never  # Use local image only
         ports:
         - containerPort: 80
