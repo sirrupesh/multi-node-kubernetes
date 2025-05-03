@@ -22,7 +22,8 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:latest
+        image: sirrupesh/mynginx:latest
+        imagePullPolicy: Never  # Use local image only
         ports:
         - containerPort: 80
           name: nginx-http  # Named port for service binding
