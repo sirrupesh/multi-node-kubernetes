@@ -5,7 +5,7 @@ kind: Kustomization
 resources:
   - ../../base  # Core
 
-namespace: prod  # Isolation
+namespace: sir-prod  # Production namespace
 
 labels:
   - includeSelectors: false
@@ -24,7 +24,7 @@ patches:
   # HA
   - target:
       kind: Deployment
-      name: llm-app
+      name: flask-app-deployment
     patch: |-
       - op: replace
         path: /spec/replicas
@@ -33,7 +33,7 @@ patches:
   # Resources
   - target:
       kind: Deployment
-      name: llm-app
+      name: flask-app-deployment
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/resources
@@ -48,7 +48,7 @@ patches:
   # Auth
   - target:
       kind: Deployment
-      name: llm-app
+      name: flask-app-deployment
     patch: |-
       - op: add
         path: /spec/template/spec/securityContext
@@ -60,7 +60,7 @@ patches:
   # Metrics
   - target:
       kind: Deployment
-      name: llm-app
+      name: flask-app-deployment
     patch: |-
       - op: add
         path: /spec/template/metadata/annotations

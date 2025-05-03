@@ -5,7 +5,7 @@ kind: Kustomization
 resources:
   - ../../base  # Core
 
-namespace: dev  # Isolation
+namespace: sir-dev  # Development namespace
 
 labels:
   - includeSelectors: false
@@ -16,7 +16,7 @@ patches:
   # Scale down
   - target:
       kind: Deployment
-      name: llm-app
+      name: flask-app-deployment
     patch: |-
       - op: replace
         path: /spec/replicas
@@ -25,7 +25,7 @@ patches:
   # Light resources
   - target:
       kind: Deployment
-      name: llm-app
+      name: flask-app-deployment
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/resources
