@@ -105,28 +105,36 @@ This project demonstrates a multi-node Kubernetes cluster setup using Kind, runn
    - Flask app: http://sirrupesh.localhost
    - Nginx service: http://cambridge.localhost
 
-## Dashboard Setup
+## Working with Local Images
 
-1. Install the dashboard:
+When developing locally, you can load Docker images directly into your Kind cluster without pushing them to a registry:
+
+1. Build your local Docker image:
    ```bash
-   helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard \
-     --create-namespace --namespace kubernetes-dashboard
+   # For app4
+   cd src/app4 && docker build -t app4:latest .
+   # For main app
+   cd src/app && docker build -t app:latest .
    ```
 
-2. Create dashboard admin user:
+2. Load the image into Kind cluster:
    ```bash
-   kubectl apply -f k8s/dashboard/dashboard-adminuser.yaml
+   # Load app4 image
+   kind load docker-image app4:latest --name sir-multi-node-ingress-cluster
+   # Load main app image
+   kind load docker-image app:latest --name sir-multi-node-ingress-cluster
    ```
 
-3. Get the token:
-   ```bash
-   kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath="{.data.token}" | base64 -d
+3. Make sure your Kubernetes manifests use the correct image name and pull policy:
+   ```yaml
+   spec:
+     containers:
+     - name: your-container
+       image: app4:latest  # Use the same tag as built locally
+       imagePullPolicy: Never  # Important for using local images
    ```
 
-4. Access dashboard:
-   ```bash
-   kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8443:443
-   ```
+Note: The `imagePullPolicy: Never` setting ensures Kubernetes uses the local image instead of trying to pull from a registry.
 
 ## Cleanup
 

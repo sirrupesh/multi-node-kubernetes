@@ -33,3 +33,14 @@ spec:
             name: nginx-app-lb-service
             port:
               number: 80
+  # Route traffic for app4.localhost to app4 service
+  - host: "app4.localhost"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app4
+            port:
+              number: 80

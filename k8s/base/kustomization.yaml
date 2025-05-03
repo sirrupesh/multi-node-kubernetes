@@ -6,6 +6,7 @@ kind: Kustomization
 # Component references
 resources:
   - app      # Flask application manifests
+  - app4     # PHP application manifests
   - nginx    # Nginx server manifests
   - ingress  # Ingress configuration
 
