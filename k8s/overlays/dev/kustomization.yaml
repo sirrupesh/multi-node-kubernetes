@@ -1,38 +1,102 @@
-# Dev Config
+# Development Environment Configuration
+# Provides development-specific settings with:
+# - Minimal resource allocation for local development
+# - Debug-friendly configuration
+# - Fast deployment cycles
+# - Local image support
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base  # Core
+  - ../../base  # Import base configuration
 
-namespace: dev  # Isolation
+namespace: dev  # Development namespace isolation
 
-labels:
-  - includeSelectors: false
-    pairs:
-      environment: development
+commonLabels:
+  environment: development
+  managed-by: kustomize
+  tier: development
+
+# Runtime Configuration
+configMapGenerator:
+- name: app-config
+  behavior: merge  # Merge with base config
+  literals:
+    - LOG_LEVEL=debug    # Verbose logging for development
+    - DEBUG_MODE=true    # Enable debug features
+    - METRICS_PORT=9090  # Development metrics port
 
 patches:
-  # Scale down
+  # Development Scaling Configuration
   - target:
       kind: Deployment
-      name: llm-app
+      name: flask-app-deployment
     patch: |-
       - op: replace
         path: /spec/replicas
-        value: 1  # Single pod
+        value: 1  # Single pod for development
 
-  # Light resources
+  # Development Resource Configuration
   - target:
       kind: Deployment
-      name: llm-app
+      name: flask-app-deployment
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/resources
         value:
           requests:
-            cpu: "50m"      # Min CPU
-            memory: "64Mi"  # Min RAM
+            cpu: "50m"      # Minimal CPU allocation
+            memory: "64Mi"  # Minimal memory allocation
           limits:
-            cpu: "200m"     # Cap CPU
-            memory: "128Mi" # Cap RAM
+            cpu: "200m"     # Moderate CPU limit
+            memory: "128Mi" # Moderate memory limit
+
+  # Development-specific Container Settings
+  - target:
+      kind: Deployment
+      name: flask-app-deployment
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: FLASK_ENV
+          value: "development"
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: FLASK_DEBUG
+          value: "1"
+
+  # Development Liveness Probe Configuration
+  - target:
+      kind: Deployment
+      name: flask-app-deployment
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe
+        value:
+          httpGet:
+            path: /
+            port: flask-http
+          initialDelaySeconds: 5    # Shorter delay for development
+          periodSeconds: 10         # More frequent checks
+          timeoutSeconds: 5         # Shorter timeout
+          failureThreshold: 3       # More lenient failure threshold
+
+  # Enable Hot Reload for Development
+  - target:
+      kind: Deployment
+      name: flask-app-deployment
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/volumeMounts
+        value:
+          - name: app-code
+            mountPath: /app
+      - op: add
+        path: /spec/template/spec/volumes
+        value:
+          - name: app-code
+            hostPath:
+              path: /src/app
+              type: Directory

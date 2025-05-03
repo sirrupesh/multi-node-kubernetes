@@ -2,7 +2,8 @@
 # Stage 1: Dependencies installation
 FROM python:3.13.3-slim as builder
 WORKDIR /app
-RUN pip install --no-cache-dir flask  # Install minimal dependencies, no cache for smaller image
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Final runtime image
 FROM python:3.13.3-slim
@@ -17,4 +18,6 @@ RUN useradd -m appuser && \
 USER appuser  # Run as non-privileged user for security
 
 EXPOSE 5000  # Application port for container networking
+EXPOSE 9090  # Metrics port for Prometheus
+
 CMD ["python", "app.py"]  # Start the Flask application
