@@ -1,20 +1,19 @@
-# Nginx Service
-# Exposes the Nginx web server to cluster and external traffic
-# Type: LoadBalancer enables external access to the service
+# Nginx Frontend Service
+# Exposes static web content externally
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-app-lb-service
+  name: nginx-frontend-service
   labels:
-    app: nginx
-    component: web
+    my-app: nginx-frontend
+    component: nginx
     tier: frontend
 spec:
   selector:
-    app: nginx
+    my-app: nginx-frontend
   ports:
-    - name: http
+    - name: nginx-http      # Web traffic port
       protocol: TCP
-      port: 80       # External port
-      targetPort: http  # Maps to container named port
-  type: LoadBalancer
+      port: 80             # External port
+      targetPort: nginx-http  # Container port
+  type: LoadBalancer       # External access

@@ -1,32 +1,28 @@
-# Development Environment Kustomization
-# Customizes base configuration for development environment
+# Dev Config
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# Reference to base configuration
 resources:
-  - ../../base
+  - ../../base  # Core
 
-# Namespace for development environment
-namespace: dev
+namespace: dev  # Isolation
 
-# Labels for all resources in dev
 labels:
   - includeSelectors: false
     pairs:
       environment: development
-  
-# Patches to override base configuration
+
 patches:
-  # Reduce replica count for development
+  # Scale down
   - target:
       kind: Deployment
       name: llm-app
     patch: |-
       - op: replace
         path: /spec/replicas
-        value: 1
-  # Modify resource limits for development
+        value: 1  # Single pod
+
+  # Light resources
   - target:
       kind: Deployment
       name: llm-app
@@ -35,8 +31,8 @@ patches:
         path: /spec/template/spec/containers/0/resources
         value:
           requests:
-            cpu: "50m"
-            memory: "64Mi"
+            cpu: "50m"      # Min CPU
+            memory: "64Mi"  # Min RAM
           limits:
-            cpu: "200m"
-            memory: "128Mi"
+            cpu: "200m"     # Cap CPU
+            memory: "128Mi" # Cap RAM

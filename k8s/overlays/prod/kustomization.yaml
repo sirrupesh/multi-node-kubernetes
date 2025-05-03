@@ -1,40 +1,36 @@
-# Production Environment Kustomization
-# Customizes base configuration for production environment
+# Prod Config
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-# Reference to base configuration
 resources:
-  - ../../base
+  - ../../base  # Core
 
-# Namespace for production environment
-namespace: prod
+namespace: prod  # Isolation
 
-# Labels for all resources in production
 labels:
   - includeSelectors: false
     pairs:
       environment: production
       tier: production
 
-# ConfigMap generator for production-specific configs
+# Runtime
 configMapGenerator:
 - name: app-config
   literals:
-    - LOG_LEVEL=info
-    - ENABLE_METRICS=true
+    - LOG_LEVEL=info      # Default
+    - ENABLE_METRICS=true # Stats
 
-# Patches to override base configuration
 patches:
-  # Increase replica count for production
+  # HA
   - target:
       kind: Deployment
       name: llm-app
     patch: |-
       - op: replace
         path: /spec/replicas
-        value: 5
-  # Enhance resource limits for production
+        value: 5  # Scale out
+
+  # Resources
   - target:
       kind: Deployment
       name: llm-app
@@ -43,12 +39,13 @@ patches:
         path: /spec/template/spec/containers/0/resources
         value:
           requests:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "500m"     # Min CPU
+            memory: "512Mi" # Min RAM
           limits:
-            cpu: "1000m"
-            memory: "1Gi"
-  # Add production security context
+            cpu: "1000m"    # Cap CPU
+            memory: "1Gi"   # Cap RAM
+
+  # Auth
   - target:
       kind: Deployment
       name: llm-app
@@ -56,10 +53,11 @@ patches:
       - op: add
         path: /spec/template/spec/securityContext
         value:
-          runAsNonRoot: true
-          runAsUser: 1000
-          fsGroup: 2000
-  # Add production-specific pod annotations
+          runAsNonRoot: true # Safe
+          runAsUser: 1000    # App
+          fsGroup: 2000      # Data
+
+  # Metrics
   - target:
       kind: Deployment
       name: llm-app
@@ -67,5 +65,5 @@ patches:
       - op: add
         path: /spec/template/metadata/annotations
         value:
-          prometheus.io/scrape: "true"
-          prometheus.io/port: "5000"
+          prometheus.io/scrape: "true" # Enable
+          prometheus.io/port: "5000"   # Port

@@ -1,15 +1,15 @@
-# Flask Application Kustomization
-# Manages Flask app deployment and service resources
+# Flask App Base Config
+# Visitor counter service components
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - deployment.yaml  # Application pods
-  - service.yaml     # Service exposure
+  - deployment.yaml  # Runtime configuration
+  - service.yaml     # Network exposure
 
 labels:
   - includeSelectors: false
     pairs:
-      component: web
-      tier: backend
-      environment: base
+      component: web     # Service type
+      tier: backend     # Architecture layer
+      environment: base # Base config

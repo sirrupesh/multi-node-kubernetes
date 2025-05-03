@@ -1,25 +1,23 @@
 # Nginx Web Server Deployment
-# Serves as a reverse proxy and static file server
-# Currently using the latest nginx image with resource constraints and health checks
+# Serves static content with basic HTTP capabilities
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: nginx-frontend-deployment
   labels:
-    app: nginx
-    component: web
+    my-app: nginx-frontend
+    component: nginx
     tier: frontend
 spec:
-  # Running 2 replicas for high availability
-  replicas: 2
+  replicas: 2  # High availability setup
   selector:
     matchLabels:
-      app: nginx
+      my-app: nginx-frontend
   template:
     metadata:
       labels:
-        app: nginx
-        component: web
+        my-app: nginx-frontend
+        component: nginx
         tier: frontend
     spec:
       containers:
@@ -27,25 +25,25 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
-          name: http
-        # Resource constraints to ensure efficient resource utilization
+          name: nginx-http  # Named port for service binding
+        # Resource allocation
         resources:
           requests:
-            cpu: "100m"
-            memory: "64Mi"
+            cpu: "100m"     # Base CPU needs
+            memory: "64Mi"  # Base memory needs
           limits:
-            cpu: "200m"
-            memory: "128Mi"
-        # Health checks for container lifecycle management
+            cpu: "200m"     # CPU ceiling
+            memory: "128Mi" # Memory ceiling
+        # Health checks
         livenessProbe:
           httpGet:
             path: /
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 30
+            port: nginx-http
+          initialDelaySeconds: 10  # Startup grace period
+          periodSeconds: 30        # Check interval
         readinessProbe:
           httpGet:
             path: /
-            port: http
-          initialDelaySeconds: 5
-          periodSeconds: 10
+            port: nginx-http
+          initialDelaySeconds: 5   # Initial wait
+          periodSeconds: 10        # Check frequency

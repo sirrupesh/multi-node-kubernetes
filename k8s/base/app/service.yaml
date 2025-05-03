@@ -1,20 +1,19 @@
-# Flask Application Service
-# Exposes the Flask application to the cluster and external traffic
-# Type: LoadBalancer makes the service accessible externally
+# Flask Counter Service
+# External access to visitor tracking app
 apiVersion: v1
 kind: Service
 metadata:
-  name: llm-app-lb-service
+  name: flask-app-service
   labels:
-    app: llm-app
-    component: web
+    my-app: flask-backend
+    component: flask
     tier: backend
 spec:
   selector:
-    app: llm-app
+    my-app: flask-backend
   ports:
-    - name: http
+    - name: flask-http      # App endpoint
       protocol: TCP
-      port: 80  # External port
-      targetPort: http  # Maps to container port 5000
-  type: LoadBalancer
+      port: 80             # Service port
+      targetPort: flask-http  # Container port 5000
+  type: LoadBalancer       # External access

@@ -1,44 +1,50 @@
+# PHP Application Deployment
+# Deploys PHP environment information service with Apache web server
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app4
+  name: php-app-deployment
   labels:
-    app: app4
-    component: web
+    my-app: php-backend
+    component: php
+    tier: backend
 spec:
-  replicas: 2
+  replicas: 2  # Multiple replicas for availability
   selector:
     matchLabels:
-      app: app4
+      my-app: php-backend
   template:
     metadata:
       labels:
-        app: app4
-        component: web
+        my-app: php-backend
+        component: php
+        tier: backend
     spec:
       containers:
-      - name: app4
+      - name: php-app
         image: app4:latest
-        imagePullPolicy: Never
+        imagePullPolicy: Never  # Use local image only
         ports:
         - containerPort: 80
-          name: http
+          name: php-http  # Named port for service reference
+        # Resource constraints
         resources:
           requests:
-            cpu: "100m"
-            memory: "128Mi"
+            cpu: "100m"     # Base CPU allocation
+            memory: "128Mi" # Base memory allocation
           limits:
-            cpu: "500m"
-            memory: "256Mi"
+            cpu: "500m"     # CPU usage cap
+            memory: "256Mi" # Memory usage cap
+        # Health monitoring
         livenessProbe:
           httpGet:
             path: /
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 30
+            port: php-http
+          initialDelaySeconds: 10  # Initial warmup time
+          periodSeconds: 30        # Check frequency
         readinessProbe:
           httpGet:
             path: /
-            port: http
-          initialDelaySeconds: 5
-          periodSeconds: 10
+            port: php-http
+          initialDelaySeconds: 5   # Initial warmup time
+          periodSeconds: 10        # Check frequency

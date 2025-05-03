@@ -1,13 +1,12 @@
-# Ingress Kustomization
-# Manages cluster ingress configuration
+# Routing Config
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ingress-resource.yaml  # Ingress routing rules
-  - ingress-class.yaml    # Ingress class definition
+  - ingress-resource.yaml  # Routes
+  - ingress-class.yaml    # Handler
 
 labels:
   - pairs:
-      component: networking
-      environment: base
+      component: network  # Type
+      environment: base  # Tier

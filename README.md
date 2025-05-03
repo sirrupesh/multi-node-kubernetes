@@ -76,12 +76,12 @@ This project demonstrates a multi-node Kubernetes cluster setup using Kind, runn
    # Wait for application deployments to be ready
    kubectl wait --namespace sir-ns \
      --for=condition=ready pod \
-     --selector=app=llm-app \
+     --selector=my-app=llm-app \
      --timeout=90s
 
    kubectl wait --namespace sir-ns \
      --for=condition=ready pod \
-     --selector=app=nginx \
+     --selector=my-app=nginx \
      --timeout=90s
    ```
 
@@ -94,8 +94,8 @@ This project demonstrates a multi-node Kubernetes cluster setup using Kind, runn
    kubectl describe deployments -n sir-ns
 
    # Check application logs
-   kubectl logs -n sir-ns -l app=llm-app
-   kubectl logs -n sir-ns -l app=nginx
+   kubectl logs -n sir-ns -l my-app=llm-app
+   kubectl logs -n sir-ns -l my-app=nginx
 
    # Check ingress status
    kubectl describe ingress -n sir-ns

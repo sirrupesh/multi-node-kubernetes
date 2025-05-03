@@ -1,16 +1,19 @@
+# PHP Info Backend
+# Internal system diagnostics
 apiVersion: v1
 kind: Service
 metadata:
-  name: app4
+  name: php-app-service
   labels:
-    app: app4
-    component: web
+    my-app: php-backend    # Service identifier
+    component: php         # Tech stack
+    tier: backend         # Architecture layer
 spec:
-  type: ClusterIP
+  type: ClusterIP        # Internal only
   ports:
-    - port: 80
-      targetPort: http
+    - port: 80           # Service port
+      targetPort: php-http  # App port
       protocol: TCP
-      name: http
+      name: php-http    # Endpoint name
   selector:
-    app: app4
+    my-app: php-backend  # Pod selector

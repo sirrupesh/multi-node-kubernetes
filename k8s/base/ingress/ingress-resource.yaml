@@ -1,46 +1,41 @@
-# Ingress Configuration
-# Manages external access to the services in the cluster
-# Configures rules for routing traffic based on hostnames
+# Traffic Router
+# External service access
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: sir-multi-node-ingress
+  name: multi-app-ingress
   annotations:
-    # Configure Nginx ingress behavior
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /  # Clean URLs
 spec:
   ingressClassName: nginx
   rules:
-  # Route traffic for sirrupesh.localhost to Flask application
-  - host: "sirrupesh.localhost"
+  - host: "sirrupesh.localhost"  # Visit counter
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: llm-app-lb-service
+            name: flask-app-service
             port:
               number: 80
-  # Route traffic for cambridge.localhost to Nginx service
-  - host: "cambridge.localhost"
+  - host: "cambridge.localhost"  # Web content
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: nginx-app-lb-service
+            name: nginx-frontend-service
             port:
               number: 80
-  # Route traffic for app4.localhost to app4 service
-  - host: "app4.localhost"
+  - host: "app4.localhost"  # PHP info
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: app4
+            name: php-app-service
             port:
               number: 80

@@ -1,20 +1,22 @@
 """
-Simple Flask Application for Kubernetes Demo
-Provides basic endpoints for visitor counting, hostname display, and request URL information.
+K8s Demo App
+Features:
+- Visit tracking
+- Pod identity
+- Request info
 """
 
 from flask import Flask, session, request
 import socket
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # For session management
+app.secret_key = 'supersecretkey'  # Session store
 
-# Global counter for visitors
-visitor_count = 0
+visitor_count = 0  # Visit tracker
 
 @app.route('/')
 def index():
-    """Track and display visitor count using session data."""
+    """Count unique visits."""
     global visitor_count
     if 'visited' not in session:
         session['visited'] = True
@@ -23,15 +25,14 @@ def index():
 
 @app.route("/hostname")
 def get_hostname():
-    """Return the container hostname for Kubernetes pod identification."""
+    """Pod identifier."""
     hostname = socket.gethostname()
     return f"Hostname :: {hostname}"
 
 @app.route("/request-url")
 def request_url():
-    """Display the current request URL for debugging and demo purposes."""
+    """Debug endpoint."""
     return f"Request URL: {request.url}"
 
 if __name__ == "__main__":
-    # Run the application on all interfaces
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000)  # Network access
