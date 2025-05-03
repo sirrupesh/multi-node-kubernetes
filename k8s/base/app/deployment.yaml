@@ -1,5 +1,6 @@
-# Visit Counter App
-# HA deployment with monitoring
+# Flask Visit Counter Deployment
+# Highly available setup with monitoring
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,7 +10,7 @@ metadata:
     component: flask
     tier: backend
 spec:
-  replicas: 3  # HA setup
+  replicas: 3  # HA configuration
   selector:
     matchLabels:
       my-app: flask-backend
@@ -26,7 +27,7 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000
-          name: flask-http  # App port
+          name: flask-http
         env:
         - name: OPENAI_API_KEY
           valueFrom:
@@ -35,20 +36,20 @@ spec:
               key: api-key
         resources:
           requests:
-            cpu: "100m"     # Base CPU
-            memory: "128Mi" # Base RAM
+            cpu: "100m"     # Minimum CPU
+            memory: "128Mi" # Minimum RAM
           limits:
-            cpu: "500m"     # CPU cap
-            memory: "256Mi" # RAM cap
+            cpu: "500m"     # Maximum CPU
+            memory: "256Mi" # Maximum RAM
         livenessProbe:
           httpGet:
             path: /
             port: flask-http
-          initialDelaySeconds: 10  # Startup delay
-          periodSeconds: 30        # Check freq
+          initialDelaySeconds: 10
+          periodSeconds: 30
         readinessProbe:
           httpGet:
             path: /
             port: flask-http
-          initialDelaySeconds: 5   # Init delay
-          periodSeconds: 10        # Check freq
+          initialDelaySeconds: 5
+          periodSeconds: 10

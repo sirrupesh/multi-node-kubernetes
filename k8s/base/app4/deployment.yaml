@@ -30,21 +30,21 @@ spec:
         # Resource constraints
         resources:
           requests:
-            cpu: "100m"     # Base CPU allocation
-            memory: "128Mi" # Base memory allocation
+            cpu: "100m"     # CPU request
+            memory: "128Mi" # Memory request
           limits:
-            cpu: "500m"     # CPU usage cap
-            memory: "256Mi" # Memory usage cap
+            cpu: "500m"     # CPU limit
+            memory: "256Mi" # Memory limit
         # Health monitoring
         livenessProbe:
           httpGet:
             path: /
             port: php-http
-          initialDelaySeconds: 10  # Initial warmup time
-          periodSeconds: 30        # Check frequency
+          initialDelaySeconds: 10  # Delay before first probe
+          periodSeconds: 30        # How often to probe (frequency)
         readinessProbe:
           httpGet:
             path: /
             port: php-http
-          initialDelaySeconds: 5   # Initial warmup time
-          periodSeconds: 10        # Check frequency
+          initialDelaySeconds: 5   # Delay before first probe
+          periodSeconds: 10        # How often to probe (frequency)

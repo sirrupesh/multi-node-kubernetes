@@ -30,7 +30,7 @@ subjects:
 
 ---
 # Authentication Token
-# Auto-generates service account token for dashboard login
+# Auto-generates a service account token for dashboard login
 apiVersion: v1
 kind: Secret
 metadata:

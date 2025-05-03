@@ -1,18 +1,23 @@
-# Core Infrastructure
-# Main service composition for multi-app demo
+# Core Services
+# Multi-app demo composition:
+# - Visit counter
+# - PHP diagnostics
+# - Static content
+# - Traffic routing
+
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - app      # Visitor counter
-  - app4     # PHP diagnostics
-  - nginx    # Static content
-  - ingress  # Traffic routing
+  - app      # Counter
+  - app4     # Diagnostics
+  - nginx    # Static
+  - ingress  # Routing
 
-namespace: sir-ns  # Dedicated namespace
+namespace: sir-ns
 
 labels:
   - includeSelectors: false
     pairs:
-      managed-by: kustomize  # Tool identifier
-      environment: base      # Config tier
+      managed-by: kustomize
+      environment: base

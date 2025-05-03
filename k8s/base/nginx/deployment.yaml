@@ -29,21 +29,21 @@ spec:
         # Resource allocation
         resources:
           requests:
-            cpu: "100m"     # Base CPU needs
-            memory: "64Mi"  # Base memory needs
+            cpu: "100m"     # CPU request
+            memory: "64Mi"  # Memory request
           limits:
-            cpu: "200m"     # CPU ceiling
-            memory: "128Mi" # Memory ceiling
+            cpu: "200m"     # CPU limit
+            memory: "128Mi" # Memory limit
         # Health checks
         livenessProbe:
           httpGet:
             path: /
             port: nginx-http
-          initialDelaySeconds: 10  # Startup grace period
-          periodSeconds: 30        # Check interval
+          initialDelaySeconds: 10  # Delay before first probe
+          periodSeconds: 30        # How often to probe (frequency)
         readinessProbe:
           httpGet:
             path: /
             port: nginx-http
-          initialDelaySeconds: 5   # Initial wait
-          periodSeconds: 10        # Check frequency
+          initialDelaySeconds: 5   # Delay before first probe
+          periodSeconds: 10        # How often to probe (frequency)

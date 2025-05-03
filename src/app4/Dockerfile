@@ -1,11 +1,9 @@
 # PHP Diagnostics Server
-# Uses official PHP image with Apache for system information display
+# Apache-based PHP info display
 FROM php:8.3.20-apache
 
-# Copy application code into web root
-COPY src/ /var/www/html/  # PHP files served from Apache's default directory
+# Copy application code
+COPY src/ /var/www/html/
 
-# Expose HTTP port for web access
-# Note: Consider restricting access in production
-EXPOSE 80  # Standard web port for Apache
+EXPOSE 80  # HTTP port
 

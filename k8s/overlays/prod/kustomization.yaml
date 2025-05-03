@@ -1,54 +1,52 @@
-# Production Environment Configuration
-# Provides enterprise-grade features:
+# Production Environment
 # - High availability and scalability
 # - Resource optimization
 # - Security hardening
 # - Monitoring integration
-# - Production-grade networking
+
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../../base  # Import base configuration
+  - ../../base
 
-namespace: prod  # Production namespace isolation
+namespace: prod  # Production isolation
 
 commonLabels:
   environment: production
   managed-by: kustomize
   tier: production
-  compliance: pci-dss  # Compliance tracking
+  compliance: pci-dss
 
-# Production Runtime Configuration
 configMapGenerator:
 - name: app-config
-  behavior: merge  # Merge with base config
+  behavior: merge
   literals:
-    - LOG_LEVEL=info           # Production logging level
-    - ENABLE_METRICS=true      # Enable prometheus metrics
-    - METRICS_PORT=9090        # Standard prometheus port
-    - SESSION_SECURE=true      # Secure session cookies
-    - RATE_LIMIT=100          # Request rate limiting
-    - CORS_ORIGINS=*.example.com  # Restricted CORS
+    - LOG_LEVEL=info
+    - ENABLE_METRICS=true
+    - METRICS_PORT=9090
+    - SESSION_SECURE=true
+    - RATE_LIMIT=100
+    - CORS_ORIGINS=*.example.com
 
 patches:
-  # High Availability Configuration
+  # High Availability
   - target:
       kind: Deployment
       name: flask-app-deployment
     patch: |-
       - op: replace
         path: /spec/replicas
-        value: 5  # Multiple replicas for HA
+        value: 3
       - op: add
         path: /spec/strategy
         value:
           type: RollingUpdate
           rollingUpdate:
             maxSurge: 1
-            maxUnavailable: 0  # Zero-downtime updates
+            maxUnavailable: 0
 
-  # Production Resource Allocation
+  # Resource Limits
   - target:
       kind: Deployment
       name: flask-app-deployment
@@ -57,13 +55,13 @@ patches:
         path: /spec/template/spec/containers/0/resources
         value:
           requests:
-            cpu: "500m"     # Guaranteed CPU
-            memory: "512Mi" # Guaranteed memory
+            cpu: "500m"
+            memory: "512Mi"
           limits:
-            cpu: "1000m"    # CPU ceiling
-            memory: "1Gi"   # Memory ceiling
+            cpu: "1000m"
+            memory: "1Gi"
 
-  # Security Context Configuration
+  # Security Context
   - target:
       kind: Deployment
       name: flask-app-deployment
@@ -71,17 +69,23 @@ patches:
       - op: add
         path: /spec/template/spec/securityContext
         value:
-          runAsNonRoot: true  # Security best practice
-          runAsUser: 1000     # Non-root user
-          fsGroup: 2000       # File system group
+          runAsNonRoot: true
+          runAsUser: 1000
+          fsGroup: 2000
           seccompProfile:
             type: RuntimeDefault
-          # Additional security policies
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
+      - op: add
+        path: /spec/template/spec/containers/0/securityContext
+        value:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
 
-  # Production Health Checks
+  # Health Probes
   - target:
       kind: Deployment
       name: flask-app-deployment
@@ -90,14 +94,14 @@ patches:
         path: /spec/template/spec/containers/0/livenessProbe
         value:
           httpGet:
-            path: /health/live  # Health check endpoint
+            path: /health/live
             port: flask-http
             httpHeaders:
             - name: Custom-Header
               value: health-check
           initialDelaySeconds: 30
           periodSeconds: 30
-          timeoutSeconds: 10
+          timeoutSeconds: 5
           failureThreshold: 3
       - op: replace
         path: /spec/template/spec/containers/0/readinessProbe
@@ -107,10 +111,10 @@ patches:
             port: flask-http
           initialDelaySeconds: 20
           periodSeconds: 15
-          timeoutSeconds: 5
+          timeoutSeconds: 3
           successThreshold: 2
 
-  # Network Policy Configuration
+  # Monitoring
   - target:
       kind: Deployment
       name: flask-app-deployment
@@ -123,35 +127,7 @@ patches:
           prometheus.io/path: "/metrics"
           checksum/config: ${CONFIGMAP_CHECKSUM}
 
-  # Production Environment Variables
-  - target:
-      kind: Deployment
-      name: flask-app-deployment
-    patch: |-
-      - op: add
-        path: /spec/template/spec/containers/0/env/-
-        value:
-          name: NODE_ENV
-          value: "production"
-      - op: add
-        path: /spec/template/spec/containers/0/env/-
-        value:
-          name: ENABLE_CACHE
-          value: "true"
-
-  # Pod Disruption Budget for HA
-  - patch: |-
-      apiVersion: policy/v1
-      kind: PodDisruptionBudget
-      metadata:
-        name: flask-app-pdb
-      spec:
-        minAvailable: 3
-        selector:
-          matchLabels:
-            my-app: flask-backend
-
-  # Pod Anti-Affinity for HA
+  # Pod Distribution
   - target:
       kind: Deployment
       name: flask-app-deployment
@@ -170,3 +146,31 @@ patches:
                     values:
                     - flask-backend
                 topologyKey: "kubernetes.io/hostname"
+
+  # Pod Disruption Budget for HA
+  - patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: flask-app-pdb
+      spec:
+        minAvailable: 3
+        selector:
+          matchLabels:
+            my-app: flask-backend
+
+  # Production Environment Variables
+  - target:
+      kind: Deployment
+      name: flask-app-deployment
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: NODE_ENV
+          value: "production"
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: ENABLE_CACHE
+          value: "true"
